@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vantage Jay</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;1,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --black: #050508;
+    --gold: #C9A84C;
+    --gold-dim: #8a6f2e;
+    --cyan: #00D4FF;
+    --cyan-dim: #007a94;
+    --white: #F0EDE6;
+    --grey: #1a1a22;
+    --grey2: #2a2a38;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.18s ease, width 0.3s, height 0.3s;
+  }
+
+  /* Grid lines background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 48px;
+    background: linear-gradient(180deg, rgba(5,5,8,0.95) 0%, transparent 100%);
+    backdrop-filter: blur(4px);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, var(--gold), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    opacity: 0.6;
+    transition: opacity 0.2s, color 0.2s;
+  }
+  .nav-links a:hover { opacity: 1; color: var(--cyan); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 48px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-content { max-width: 780px; }
+
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--cyan);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 12vw, 9rem);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+
+  .hero-name .gold { color: var(--gold); }
+  .hero-name .cyan { color: var(--cyan); }
+
+  .hero-greek {
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(1rem, 3vw, 1.8rem);
+    color: var(--gold-dim);
+    letter-spacing: 6px;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.55s forwards;
+  }
+
+  .hero-desc {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: rgba(240,237,230,0.65);
+    max-width: 500px;
+    margin-bottom: 48px;
+    font-weight: 400;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.7s forwards;
+  }
+
+  .hero-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.85s forwards;
+  }
+
+  .pill {
+    padding: 6px 18px;
+    border: 1px solid var(--grey2);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: rgba(240,237,230,0.7);
+    background: rgba(26,26,34,0.6);
+    backdrop-filter: blur(4px);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .pill:hover { border-color: var(--cyan); color: var(--cyan); }
+  .pill.gold-pill { border-color: var(--gold-dim); color: var(--gold); }
+
+  .hero-cta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.8s 1s forwards;
+  }
+
+  .btn-primary {
+    padding: 14px 36px;
+    background: linear-gradient(135deg, var(--gold), #e8c06a);
+    color: var(--black);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,168,76,0.35); }
+
+  .btn-secondary {
+    padding: 14px 36px;
+    border: 1px solid rgba(0,212,255,0.4);
+    color: var(--cyan);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .btn-secondary:hover { background: rgba(0,212,255,0.07); border-color: var(--cyan); }
+
+  /* Glowing orb */
+  .hero-orb {
+    position: absolute;
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, rgba(201,168,76,0.05) 40%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: pulse 6s ease-in-out infinite;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    margin: 0 48px;
+    opacity: 0.4;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 100px 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--cyan);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 48px;
+    color: var(--white);
+  }
+
+  /* SKILLS */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2px;
+  }
+
+  .skill-card {
+    background: var(--grey);
+    padding: 36px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .skill-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--cyan);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.3s;
+  }
+  .skill-card:hover { background: var(--grey2); }
+  .skill-card:hover::before { transform: scaleY(1); }
+  .skill-card.gold-card::before { background: var(--gold); }
+
+  .skill-icon {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+  }
+
+  .skill-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    color: var(--white);
+  }
+
+  .skill-desc {
+    font-size: 0.78rem;
+    color: rgba(240,237,230,0.5);
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  /* AFFILIATIONS */
+  .affiliations {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .affil-card {
+    border: 1px solid var(--grey2);
+    padding: 32px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  .affil-card:hover { border-color: var(--gold-dim); }
+
+  .affil-role {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .affil-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .affil-desc {
+    font-size: 0.78rem;
+    color: rgba(240,237,230,0.5);
+    line-height: 1.7;
+  }
+
+  /* CONNECT */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .connect-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+    background: var(--grey);
+    text-decoration: none;
+    color: var(--white);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    border-left: 2px solid transparent;
+  }
+  .connect-link:hover {
+    background: var(--grey2);
+    color: var(--cyan);
+    border-left-color: var(--cyan);
+    transform: translateX(4px);
+  }
+  .connect-link.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+    filter: grayscale(1);
+  }
+
+  .connect-icon { font-size: 1.2rem; }
+  .connect-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-left: auto;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 48px;
+    border-top: 1px solid var(--grey2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-left {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(240,237,230,0.3);
+    letter-spacing: 2px;
+  }
+
+  .footer-right {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, var(--gold), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translateY(-50%) scale(1); opacity: 1; }
+    50% { transform: translateY(-50%) scale(1.08); opacity: 0.7; }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    section { padding: 70px 24px; }
+    .divider { margin: 0 24px; }
+    footer { padding: 30px 24px; }
+    .hero-orb { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">VJ</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#affiliations">Work</a></li>
+    <li><a href="#connect">Connect</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="about">
+  <div class="hero-content">
+    <p class="hero-tag">// Information Systems · Nigeria</p>
+    <h1 class="hero-name">
+      <span class="gold">Vantage</span><br/>
+      <span class="cyan">Jay</span>
+    </h1>
+    <p class="hero-greek">Βάντατζ Τζέι</p>
+    <p class="hero-desc">
+      Fintech & Web3 analyst. Data storyteller. Software developer. Artist. Building at the intersection of technology, money, and creativity — from Nigeria to the world.
+    </p>
+    <div class="hero-pills">
+      <span class="pill">Fintech</span>
+      <span class="pill">Data Analysis</span>
+      <span class="pill gold-pill">Web3</span>
+      <span class="pill">Software Dev</span>
+      <span class="pill">Digital Art</span>
+      <span class="pill gold-pill">KOL</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#connect" class="btn-primary">Connect with me</a>
+      <a href="#skills" class="btn-secondary">What I do</a>
+    </div>
+  </div>
+  <div class="hero-orb"></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SKILLS -->
+<section id="skills">
+  <p class="section-label reveal">// Expertise</p>
+  <h2 class="section-title reveal">What I Do</h2>
+  <div class="skills-grid">
+    <div class="skill-card reveal">
+      <div class="skill-icon">📊</div>
+      <div class="skill-name">Data Analysis</div>
+      <div class="skill-desc">Turning raw numbers into decisions. Python, SQL, Excel — finding the signal in the noise.</div>
+    </div>
+    <div class="skill-card gold-card reveal">
+      <div class="skill-icon">🔗</div>
+      <div class="skill-name">Web3 Analysis</div>
+      <div class="skill-desc">On-chain data, DeFi protocols, crypto markets. Decoding the decentralized economy.</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">💻</div>
+      <div class="skill-name">Software Dev</div>
+      <div class="skill-desc">Building tools that work. HTML, CSS, JavaScript, React, C — from concept to execution.</div>
+    </div>
+    <div class="skill-card gold-card reveal">
+      <div class="skill-icon">💰</div>
+      <div class="skill-name">Fintech</div>
+      <div class="skill-desc">Financial technology, digital payments, investment platforms — bridging money and tech.</div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">🎨</div>
+      <div class="skill-name">Digital Art</div>
+      <div class="skill-desc">Visual storytelling. Concept design, illustration, and creative branding.</div>
+    </div>
+    <div class="skill-card gold-card reveal">
+      <div class="skill-icon">📢</div>
+      <div class="skill-name">KOL / Content</div>
+      <div class="skill-desc">Building communities, growing audiences, and creating content that moves people.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- AFFILIATIONS -->
+<section id="affiliations">
+  <p class="section-label reveal">// Affiliations</p>
+  <h2 class="section-title reveal">Where I Work</h2>
+  <div class="affiliations">
+    <div class="affil-card reveal">
+      <div class="affil-role">Campus Ambassador</div>
+      <div class="affil-name">Cowrywise</div>
+      <div class="affil-desc">Driving financial awareness and investment culture among Nigerian students. Empowering the next generation to save and invest smart.</div>
+    </div>
+    <div class="affil-card reveal">
+      <div class="affil-role">Key Opinion Leader</div>
+      <div class="affil-name">ChainGPT Pad</div>
+      <div class="affil-desc">Web3 & AI launchpad ecosystem. Analyzing projects, educating communities, and amplifying the future of blockchain technology.</div>
+    </div>
+    <div class="affil-card reveal">
+      <div class="affil-role">Student</div>
+      <div class="affil-name">FUNAAB</div>
+      <div class="affil-desc">Information Systems · Federal University of Agriculture, Abeokuta. Class of 2029.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONNECT -->
+<section id="connect">
+  <p class="section-label reveal">// Socials</p>
+  <h2 class="section-title reveal">Find Me Here</h2>
+  <div class="connect-grid">
+    <a href="https://x.com/vantage__jay" target="_blank" class="connect-link reveal">
+      <span class="connect-icon">𝕏</span>
+      <span>X / Twitter</span>
+      <span class="connect-tag">ACTIVE</span>
+    </a>
+    <a href="https://www.tiktok.com/@vantage_jay" target="_blank" class="connect-link reveal">
+      <span class="connect-icon">🎵</span>
+      <span>TikTok</span>
+    </a>
+    <a href="https://www.instagram.com/vantage_jay" target="_blank" class="connect-link reveal">
+      <span class="connect-icon">📸</span>
+      <span>Instagram</span>
+    </a>
+    <a href="https://wa.me/" target="_blank" class="connect-link reveal">
+      <span class="connect-icon">💬</span>
+      <span>WhatsApp</span>
+    </a>
+    <!-- MEDIUM — disabled until ready. To enable: remove the "disabled" class below -->
+    <a href="#" class="connect-link disabled reveal">
+      <span class="connect-icon">✍️</span>
+      <span>Medium</span>
+      <span class="connect-tag">SOON</span>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">© 2026 · VANTAGE JAY · ALL RIGHTS RESERVED</div>
+  <div class="footer-right">Vantage Jay</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    setTimeout(() => {
+      ring.style.left = e.clientX + 'px';
+      ring.style.top = e.clientY + 'px';
+    }, 80);
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
